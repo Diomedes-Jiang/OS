@@ -16,14 +16,6 @@ flag = [False, False]
 turn = 0
 threads = []
 
-def draw_process(x0, y0):
-    d = 40
-    p0 = canvas.create_oval(x0, y0, x0 + d, y0 + d, fill="red")
-    process.append(p0)
-
-
-
-
 
 def move_item(item, x0, y0, x1, y1):
     canvas.coords(item, x0, y0, x1, y1)
@@ -42,6 +34,8 @@ def to_dekker():
 def to_peterson():
     over(0)
     peterson.main()
+
+
 def to_lam():
     var = askinteger("text", prompt="请输入进程数量")
     over(0)
@@ -67,7 +61,7 @@ if __name__ == "__main__":
     index = 0
     root = Tk()
     root.title("基于软件互斥算法的临界区进程互斥的模拟实现")
-    root.geometry("700x400+200+200")
+    root.geometry("700x450+200+200")
     canvas = Canvas(root, width=500, height=400)
     sb = Scrollbar(root)
 

@@ -104,3 +104,8 @@ def main():
     thread1.start()
 
     root.mainloop()
+
+
+if __name__ == "__main__":
+
+    main()

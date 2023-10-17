@@ -62,7 +62,7 @@ class EisenbergThread(threading.Thread):
                     self.resource.text.insert(tk.END, f"进程{self.id + 1}正在等待.....\n")
                     self.resource.progress_panel.set_color(self.id, self.resource.WAIT)
                     self.resource.text.see(tk.END)
-                    time.sleep(1)
+                    time.sleep(0.5)
                     if index == self.id and (self.resource.turn == self.id or self.resource.flags[
                         self.resource.turn] == self.resource.IDLE):
                         break

@@ -26,7 +26,7 @@ class LamportResource:
 
     def more_priority(self, id, other_id):
         return (self.number[id] != 0) and ((self.number[id] < self.number[other_id]) or (
-                    self.number[id] == self.number[other_id] and id < other_id))
+                self.number[id] == self.number[other_id] and id < other_id))
 
     def start_thread(self, id):
         thread = LamportThread(id, self)
@@ -95,11 +95,12 @@ class DynamicPanelInLamport(tk.Canvas):
         self.flag[id] = color
         self.draw_colors_and_shapes()
 
-    def draw_critical(self):
-        x0, y0 = 130,20
+    def draw_critical(self):  # 临界区位置
+        x0, y0 = 130, 20
         self.create_rectangle(x0, y0, x0 + 140, y0 + 30, fill="pink")
         self.create_text(x0 + 70, y0 + 10, text="临界区")
         self.create_rectangle(x0, y0, x0 + 140, y0 + 120)
+
     def draw_colors_and_shapes(self):
 
         self.delete("all")
@@ -124,14 +125,17 @@ class DynamicPanelInLamport(tk.Canvas):
     def draw_in_thread_shape(self, id):
 
         self.create_text(190, 60 + 60, text=f"进程 {id} 正在运行ing")
-        self.create_oval(180, 60, 180 + 50, 60 + 50, outline="green", width=2)
-        self.create_oval(180, 60, 180 + 50, 60 + 50, fill="pink")
+        self.create_oval(180, 60, 180 + 50, 60 + 50, outline="green", fill="pink", width=2)
+        # self.create_oval(180, 60, 180 + 50, 60 + 50, )
+
 
 def restart_program():
     python = sys.executable
     os.execl(python, python, 'C:\\Users\\diomedes\\Desktop\\os\\tk3.py')
+
+
 def main(n=4):
-  # 设置进程数量
+    # 设置进程数量
     root = tk.Tk()
     root.title("Lamport算法示例")
 
@@ -144,14 +148,12 @@ def main(n=4):
         thread.start()
 
     b1 = tk.Button(root, relief='flat', activebackground='orange', bg='lightgreen', overrelief='raised',
-                      text='back',
-                      command=restart_program)
-
+                   text='back',
+                   command=restart_program)
 
     b1.place(width=60, height=45, x=80 + 400, y=360)
     root.mainloop()
 
 
 if __name__ == "__main__":
-
     main()
