@@ -5,6 +5,12 @@ import threading
 import time
 import random
 import math
+def rand_sleep():
+    return random.random() + random.randint(0, 2)
+
+
+def sleep(t):
+    time.sleep(t)
 
 
 class EisenbergResource:
@@ -16,7 +22,7 @@ class EisenbergResource:
         self.ACTIVE = 2
         self.WAIT = 3
         self.turn = random.randint(0, n - 1)
-
+        self.seconds=[0]*n
         self.root = root
         self.text = tk.Text(root)
         self.text.pack()
@@ -35,6 +41,12 @@ class EisenbergThread(threading.Thread):
         super().__init__()
         self.id = id
         self.resource = resource
+        self.resource.text.tag_config("tag_red", foreground="red")
+        self.resource.text.tag_config("tag_yellow", background="grey", foreground="yellow")
+        self.resource.text.tag_config("tag_pink", foreground="pink")
+        self.resource.text.tag_config("tag_pink2", background="pink")
+        self.resource.text.tag_config("tag_blue", foreground="blue")
+        self.resource.text.tag_config("tag_green", foreground="green")
 
     def run(self):
         while True:
@@ -59,10 +71,10 @@ class EisenbergThread(threading.Thread):
                     index = 0
                     while self.resource.flags[index] != self.resource.ACTIVE:
                         index = (index + 1) % self.resource.NUM_THREADS
-                    self.resource.text.insert(tk.END, f"进程{self.id + 1}正在等待.....\n")
+                    self.resource.text.insert(tk.END, f"进程{self.id + 1}正在等待.....\n","tag_green")
                     self.resource.progress_panel.set_color(self.id, self.resource.WAIT)
                     self.resource.text.see(tk.END)
-                    time.sleep(0.5)
+                    time.sleep(1)
                     if index == self.id and (self.resource.turn == self.id or self.resource.flags[
                         self.resource.turn] == self.resource.IDLE):
                         break
@@ -70,18 +82,19 @@ class EisenbergThread(threading.Thread):
                     self.resource.turn = self.id
                 time.sleep(1)
 
-                self.resource.text.insert(tk.END, f"---进程{self.id + 1}正在访问临界区---\n")
+                self.resource.text.insert(tk.END, f"---进程{self.id + 1}正在访问临界区---\n","tag_pink")
                 self.resource.text.see(tk.END)
                 self.resource.progress_panel.set_color(self.id, self.resource.ACTIVE)
-                time.sleep(1.5 + ra.uniform(0, 0.5))
-
+                t=rand_sleep()
+                sleep(t)
+                self.resource.seconds[self.id]+=round(t,2)
                 index = (self.resource.turn + 1) % self.resource.NUM_THREADS
                 while self.resource.flags[index] == self.resource.IDLE:
                     index = (index + 1) % self.resource.NUM_THREADS
                 self.resource.turn = index
                 self.resource.flags[self.id] = self.resource.IDLE
                 self.resource.progress_panel.set_color(self.id, self.resource.IDLE)
-                self.resource.text.insert(tk.END, f"*****进程{self.id + 1}访问结束！*****\n")
+                self.resource.text.insert(tk.END, f"*****进程{self.id + 1}访问结束！此次访问了临界区{t:.2f}秒，共访问{self.resource.seconds[self.id]}秒*****\n","tag_pink2")
                 self.resource.text.see(tk.END)
                 time.sleep(1)
 
@@ -91,7 +104,7 @@ class EisenbergThread(threading.Thread):
                 time.sleep(1)
                 self.resource.flags[self.id] = self.resource.IDLE
                 self.resource.progress_panel.set_color(self.id, self.resource.IDLE)
-                self.resource.text.insert(tk.END, f"*****进程{self.id + 1}从现在开始10个时间片不想进入临界区\n")
+                self.resource.text.insert(tk.END, f"进程{self.id + 1}从现在开始10个时间片不想进入临界区\n","tag_red")
                 self.resource.text.see(tk.END)
                 time.sleep(10)
 
@@ -146,7 +159,7 @@ class ProgressPanel(tk.Canvas):
 
 def restart_program():
     python = sys.executable
-    os.execl(python, python, 'C:\\Users\\diomedes\\Desktop\\os\\tk3.py')
+    os.execl(python, python, 'D:\\Desktop\\OSfjm\\tk3.py')
 
 
 def main(n=4):

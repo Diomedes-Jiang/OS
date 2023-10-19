@@ -8,11 +8,21 @@ import time
 x0, y0 = 170, 40
 
 
+def rand_sleep():
+    return random.random() + random.randint(0, 2)
+
+
+def sleep(t):
+    time.sleep(t)
+
+
 class DekkerResource:
     def __init__(self, root):
         self.items = [-1, -1]
         self.txts=[None,None]
         self.wantEnter = [False, False]
+        self.seconds = [0, 0]
+        self.seconds_txts = [None, None]
         self.dekker_turn = random.randint(0, 1)
         self.root = root
 
@@ -24,10 +34,16 @@ class DekkerResource:
         self.dynamicPanel.create_rectangle(x0, y0, x0 + 140, y0 + 30, fill="pink")
         self.dynamicPanel.create_text(x0 + 70, y0 + 10, text="临界区")
         self.dynamicPanel.create_rectangle(x0, y0, x0 + 140, y0 + 120)
+
         self.dynamicPanel.pack()
 
 
 def dekker_thread(root, id, resource):
+    resource.text.tag_config("tag_red", foreground="red")
+    resource.text.tag_config("tag_yellow", background="grey", foreground="yellow")
+    resource.text.tag_config("tag_pink", foreground="pink")
+    resource.text.tag_config("tag_pink2", background="pink")
+    resource.text.tag_config("tag_blue", foreground="blue")
     while True:
         resource.wantEnter[id] = True
         if resource.items[id] == -1:
@@ -40,13 +56,16 @@ def dekker_thread(root, id, resource):
 
         while resource.wantEnter[1 - id]:
             if resource.dekker_turn == 1 - id:
-                resource.text.insert(tk.END, f"turn为{resource.dekker_turn},进程{id}放弃\n")
-                resource.text.see(tk.END)
                 resource.wantEnter[id] = False
                 resource.dynamicPanel.itemconfig(resource.items[id],
                                                  fill="red")
+
+                resource.text.insert("end", f"turn为{resource.dekker_turn},进程{id}放弃\n", "tag_red")
+                resource.text.see(tk.END)
+
                 while resource.dekker_turn == 1 - id:
-                    resource.text.insert(tk.END, f"turn为 {resource.dekker_turn}进程 {id}等待中\n")
+                    resource.text.insert(tk.END, f"turn为 {resource.dekker_turn}进程 {id}等待中\n",
+                                         "tag_yellow")  # 黄色的时候为wantEnter 只有先黄才能进入
                     resource.text.see(tk.END)
                     time.sleep(0.8)
                 resource.wantEnter[id] = True
@@ -60,19 +79,23 @@ def dekker_thread(root, id, resource):
         time.sleep(1)
         resource.dynamicPanel.itemconfig(resource.items[id],
                                          fill="pink")
-        resource.dynamicPanel.coords(resource.items[id], x0+70-25, y0+60-25, x0 + 70+25, y0 + 60+25)
-        resource.text.insert(tk.END, f"进程{id}正在访问临界区----\n")
-        resource.dynamicPanel.coords(resource.txts[id], x0+70, y0+60+45)
-        resource.dynamicPanel.itemconfig(resource.txts[id],text=f"进程{id}正在运行ing")
-        resource.text.see(tk.END)
-        time.sleep(2 + random.randint(0, 1))
+        resource.dynamicPanel.coords(resource.items[id], x0 + 70 - 25, y0 + 60 - 25, x0 + 70 + 25, y0 + 60 + 25)
+        resource.text.insert(tk.END, f"进程{id}正在访问临界区----\n", "tag_pink")
+        resource.dynamicPanel.coords(resource.txts[id], x0 + 70, y0 + 60 + 45)
+        resource.dynamicPanel.itemconfig(resource.txts[id], text=f"进程{id}正在运行ing")
 
-        resource.dekker_turn = 1 - id
-        resource.dynamicPanel.coords(resource.items[id],90 * id, 100, 90 * id + 50, 150)
-        resource.dynamicPanel.coords(resource.txts[id], 90*id+25,170)
+        t = rand_sleep()
+        sleep(t)
+        resource.seconds[id] += round(t, 2)
+        resource.text.insert(tk.END, f"~~~~进程{id}访问了临界区{t:.2f}秒,共访问临界区{resource.seconds[id]}秒~~~~\n",
+                             "tag_pink2")
+        resource.text.see(tk.END)
+        resource.dynamicPanel.coords(resource.items[id], 90 * id + 20, 100, 90 * id + 70, 150)
+        resource.dynamicPanel.coords(resource.txts[id], 90 * id + 40, 170)
         resource.dynamicPanel.itemconfig(resource.txts[id], text=f"进程{id}")
         resource.text.insert(tk.END, f"进程{id}访问结束！\n")
-        resource.text.insert(tk.END, f"turn 更新为{resource.dekker_turn}\n")
+        resource.text.insert(tk.END, f"turn 更新为{resource.dekker_turn}\n", "tag_blue")
+        resource.dekker_turn = 1 - id
         resource.text.see(tk.END)
         resource.dynamicPanel.itemconfig(resource.items[id],
                                          fill="green")

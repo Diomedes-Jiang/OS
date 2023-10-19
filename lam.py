@@ -6,6 +6,14 @@ import time
 import random
 
 
+def rand_sleep():
+    return random.random() + random.randint(0, 2)
+
+
+def sleep(t):
+    time.sleep(t)
+
+
 class LamportResource:
     def __init__(self, n, root):
         self.number = [0] * n
@@ -16,6 +24,7 @@ class LamportResource:
         self.text.pack()
         self.dynamic_panel = DynamicPanelInLamport(n, self.number)
         self.dynamic_panel.pack()
+        self.seconds=[0]*10
         self.threads = []
 
     def get_number(self, id):
@@ -41,6 +50,12 @@ class LamportThread(threading.Thread):
         self.resource = resource
 
     def run(self):
+        self.resource.text.tag_config("tag_red", foreground="red")
+        self.resource.text.tag_config("tag_yellow", background="grey", foreground="yellow")
+        self.resource.text.tag_config("tag_pink", foreground="pink")
+        self.resource.text.tag_config("tag_pink2", background="pink")
+        self.resource.text.tag_config("tag_blue", foreground="blue")
+        self.resource.text.tag_config("tag_green", foreground="green")
         while True:
             self.resource.dynamic_panel.set_color(self.id, 1)
             time.sleep(1 + random.randint(0, 3))
@@ -50,7 +65,7 @@ class LamportThread(threading.Thread):
             time.sleep(1 + random.randint(0, 1))
 
             self.resource.get_number(self.id)
-            self.resource.text.insert(tk.END, f"进程{self.id} 取到号码：{self.resource.number[self.id]}\n")
+            self.resource.text.insert(tk.END, f"进程{self.id} 取到号码：{self.resource.number[self.id]}\n", "tag_red")
             self.resource.text.see(tk.END)
             self.resource.choosing[self.id] = 0
             self.resource.dynamic_panel.set_color(self.id, 2)
@@ -58,23 +73,24 @@ class LamportThread(threading.Thread):
 
             for i in range(self.resource.N):
                 while self.resource.choosing[i] != 0:
-                    self.resource.text.insert(tk.END, f"当进程 {i} 正在取号，进程 {self.id} 则等待其取完\n")
+                    self.resource.text.insert(tk.END, f"当进程 {i} 正在取号，进程 {self.id} 则等待其取完\n", "tag_blue")
                     self.resource.text.see(tk.END)
                     time.sleep(1 + random.randint(0, 1))
 
                 while self.resource.more_priority(i, self.id):
                     if random.randint(0, 12) == 0:
-                        self.resource.text.insert(tk.END, f"当进程 {i} 更优先，进程 {self.id} 等待\n")
+                        self.resource.text.insert(tk.END, f"当进程 {i} 更优先，进程 {self.id} 等待\n", "tag_green")
                         self.resource.text.see(tk.END)
                     time.sleep(0.1 + random.uniform(0, 0.2))
 
-            self.resource.text.insert(tk.END, f"进程{self.id}正在访问临界区----\n")
+            self.resource.text.insert(tk.END, f"进程{self.id}正在访问临界区----\n", "tag_pink")
             self.resource.text.see(tk.END)
             self.resource.dynamic_panel.set_color(self.id, 4)
-            time.sleep(1 + random.randint(0, 1))
-
+            t=rand_sleep()
+            sleep(t)
+            self.resource.seconds[self.id]+=round(t,2)
             self.resource.number[self.id] = 0
-            self.resource.text.insert(tk.END, f"进程{self.id}访问结束！\n")
+            self.resource.text.insert(tk.END, f"进程{self.id}访问结束！访问临界区{t:.2f}秒。共访问{self.resource.seconds[self.id]}秒。\n", "tag_pink2")
             self.resource.text.see(tk.END)
             self.resource.dynamic_panel.set_color(self.id, 3)
 
@@ -85,7 +101,7 @@ class DynamicPanelInLamport(tk.Canvas):
     def __init__(self, n, numbers):
         super().__init__()
         self.x = [50 + (i % 5) * 70 for i in range(n)]
-        self.y = [180 + i // 5 * 70 for i in range(n)]
+        self.y = [140 + i // 5 * 70 for i in range(n)]
         self.flag = [1] * n
         self.numbers = numbers
         self.n = n
@@ -95,7 +111,7 @@ class DynamicPanelInLamport(tk.Canvas):
         self.flag[id] = color
         self.draw_colors_and_shapes()
 
-    def draw_critical(self):  # 临界区位置
+    def draw_critical(self):
         x0, y0 = 130, 20
         self.create_rectangle(x0, y0, x0 + 140, y0 + 30, fill="pink")
         self.create_text(x0 + 70, y0 + 10, text="临界区")
@@ -116,25 +132,25 @@ class DynamicPanelInLamport(tk.Canvas):
                     color = "green"
                 elif self.flag[i] == 5:
                     color = "blue"
-                self.create_oval(self.x[i], self.y[i], self.x[i] + 50, self.y[i] + 50, fill=color)
-                self.create_text(self.x[i] + 10, self.y[i] + 60, text=f"进程{i}")
-                self.create_text(self.x[i] + 20, self.y[i] + 30, text=str(self.numbers[i]))
+                self.create_oval(self.x[i], self.y[i], self.x[i] + 32, self.y[i] + 32, fill=color)
+                self.create_text(self.x[i] + 6, self.y[i] + 36, text=f"进程{i}")
+                self.create_text(self.x[i] + 12, self.y[i] + 18, text=str(self.numbers[i]))
             else:
                 self.draw_in_thread_shape(i)
 
     def draw_in_thread_shape(self, id):
 
         self.create_text(190, 60 + 60, text=f"进程 {id} 正在运行ing")
-        self.create_oval(180, 60, 180 + 50, 60 + 50, outline="green", fill="pink", width=2)
-        # self.create_oval(180, 60, 180 + 50, 60 + 50, )
+        self.create_oval(180, 60, 180 + 32, 60 + 32, outline="green", width=2)
+        self.create_oval(180, 60, 180 + 32, 60 + 32, fill="pink")
 
 
 def restart_program():
     python = sys.executable
-    os.execl(python, python, 'C:\\Users\\diomedes\\Desktop\\os\\tk3.py')
+    os.execl(python, python, 'D:\\Desktop\\OSfjm\\tk3.py')
 
 
-def main(n=4):
+def main(n=8):
     # 设置进程数量
     root = tk.Tk()
     root.title("Lamport算法示例")
