@@ -37,7 +37,7 @@ class PetersonResource:
 
 def restart_program():
     python = sys.executable
-    os.execl(python, python, 'D:\\Desktop\\OSfjm\\tk3.py')
+    os.execl(python, python, 'C:\\Users\\diomedes\\Desktop\\os\\tk3.py')
 
 
 def peterson_thread(root, id, resource):

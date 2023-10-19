@@ -191,8 +191,8 @@ if __name__ == "__main__":
 
     index = 0
     root = Tk()
-    root.title("算法演示")
-    root.geometry("700x500+200+200")
+    root.title("基于软件互斥算法的临界区进程互斥的模拟实现")
+    root.geometry("700x450+200+200")
     canvas = Canvas(root, width=500, height=400)
 
     process = []

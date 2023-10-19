@@ -141,13 +141,13 @@ class DynamicPanelInLamport(tk.Canvas):
     def draw_in_thread_shape(self, id):
 
         self.create_text(190, 60 + 60, text=f"进程 {id} 正在运行ing")
-        self.create_oval(180, 60, 180 + 32, 60 + 32, outline="green", width=2)
-        self.create_oval(180, 60, 180 + 32, 60 + 32, fill="pink")
+        self.create_oval(180, 60, 180 + 32, 60 + 32, outline="green", fill="pink",width=2)
+        # self.create_oval(180, 60, 180 + 32, 60 + 32, fill="pink")
 
 
 def restart_program():
     python = sys.executable
-    os.execl(python, python, 'D:\\Desktop\\OSfjm\\tk3.py')
+    os.execl(python, python, 'C:\\Users\\diomedes\\Desktop\\os\\tk3.py')
 
 
 def main(n=8):
